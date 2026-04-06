@@ -18,11 +18,7 @@ class DouyinMonitor {
         
         guard let url = getBrowserURL(appName: appName) else { return 0 }
         
-        let isDouyin = AppConstants.douyinDomains.contains { domain in
-            url.contains(domain)
-        }
-        
-        if isDouyin {
+        if isDouyinURL(url) {
             return Int(AppConstants.monitorInterval)
         }
         
@@ -30,8 +26,6 @@ class DouyinMonitor {
     }
     
     private func getBrowserURL(appName: String) -> String? {
-        let workspace = NSWorkspace.shared
-        
         switch appName {
         case "Safari":
             return getSafariURL()
@@ -45,6 +39,17 @@ class DouyinMonitor {
             return getChromeBasedURL(appName)
         default:
             return nil
+        }
+    }
+    
+    private func isDouyinURL(_ urlString: String) -> Bool {
+        guard let host = URLComponents(string: urlString)?.host?.lowercased() else {
+            return false
+        }
+        
+        return AppConstants.douyinDomains.contains { domain in
+            let normalizedDomain = domain.lowercased()
+            return host == normalizedDomain || host.hasSuffix(".\(normalizedDomain)")
         }
     }
     

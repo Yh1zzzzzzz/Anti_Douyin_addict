@@ -5,26 +5,30 @@ set -e
 APP_NAME="DouyinAntiAddict"
 BUILD_DIR="./build"
 SCHEME="DouyinAntiAddict"
+CONFIGURATION="Release"
 
 echo "Building $APP_NAME with xcodebuild..."
 
 xcodebuild clean build \
     -project "$APP_NAME.xcodeproj" \
     -scheme "$SCHEME" \
-    -configuration Release \
+    -configuration "$CONFIGURATION" \
     -derivedDataPath "$BUILD_DIR/DerivedData" \
+    CODE_SIGNING_ALLOWED=NO \
     -quiet
 
-APP_PATH=$(find "$BUILD_DIR/DerivedData" -name "$APP_NAME.app" -type d | head -1)
+APP_PATH="$BUILD_DIR/DerivedData/Build/Products/$CONFIGURATION/$APP_NAME.app"
 
-if [ -z "$APP_PATH" ]; then
+if [ ! -d "$APP_PATH" ]; then
     echo "Error: App not found in build output"
     exit 1
 fi
 
 OUTPUT_DIR="$BUILD_DIR"
-rm -rf "$OUTPUT_DIR/$APP_NAME.app"
-cp -R "$APP_PATH" "$OUTPUT_DIR/$APP_NAME.app"
+if [ -d "$OUTPUT_DIR/$APP_NAME.app" ]; then
+    mv "$OUTPUT_DIR/$APP_NAME.app" "$OUTPUT_DIR/$APP_NAME.app.previous.$(date +%Y%m%d%H%M%S)"
+fi
+ditto "$APP_PATH" "$OUTPUT_DIR/$APP_NAME.app"
 
 echo ""
 echo "Build complete!"

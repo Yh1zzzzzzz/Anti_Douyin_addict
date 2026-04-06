@@ -1,13 +1,16 @@
 import Foundation
 import AppKit
+import UserNotifications
 
-class StatusBarManager: NSObject {
+class StatusBarManager: NSObject, UNUserNotificationCenterDelegate {
+    private let statusBarLogoName = NSImage.Name("StatusBarLogo")
     var statusItem: NSStatusItem!
     var monitor: DouyinMonitor!
     var blockManager: BlockManager!
     var statsTracker: StatsTracker!
     var settingsManager: SettingsManager!
     var launchAgentManager: LaunchAgentManager!
+    var settingsWindow: SettingsWindow?
     var timer: Timer?
     
     override init() {
@@ -20,10 +23,12 @@ class StatusBarManager: NSObject {
         launchAgentManager = LaunchAgentManager()
         
         launchAgentManager.enableAutoStart()
+        configureNotifications()
         
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        updateStatusBarIcon()
-        updateMenu()
+        DispatchQueue.main.async { [weak self] in
+            self?.refreshStatusUI()
+        }
         
         timer = Timer.scheduledTimer(
             timeInterval: AppConstants.monitorInterval,
@@ -37,6 +42,10 @@ class StatusBarManager: NSObject {
     @objc func checkDouyinUsage() {
         blockManager.checkAndResetIfNewDay()
         
+        defer {
+            refreshStatusUI()
+        }
+        
         if blockManager.isBlockedToday() {
             return
         }
@@ -49,16 +58,20 @@ class StatusBarManager: NSObject {
         
         if todaySeconds >= limitSeconds {
             blockManager.block()
-            updateStatusBarIcon()
-            updateMenu()
             showBlockNotification()
         }
+    }
+    
+    func refreshStatusUI() {
+        updateStatusBarIcon()
+        updateMenu()
     }
     
     func updateMenu() {
         blockManager.checkAndResetIfNewDay()
         
         let menu = NSMenu()
+        menu.autoenablesItems = false
         
         let isBlocked = blockManager.isBlockedToday()
         let todaySeconds = statsTracker.getTodaySeconds()
@@ -110,13 +123,20 @@ class StatusBarManager: NSObject {
             
             menu.addItem(NSMenuItem.separator())
             
-            let settingsItem = NSMenuItem(title: "设置...", action: #selector(openSettings), keyEquivalent: "")
-            menu.addItem(settingsItem)
         }
         
         menu.addItem(NSMenuItem.separator())
         
+        let openWindowItem = NSMenuItem(title: "打开界面...", action: #selector(openSettings), keyEquivalent: "")
+        openWindowItem.target = self
+        openWindowItem.isEnabled = true
+        menu.addItem(openWindowItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        
         let quitItem = NSMenuItem(title: "退出", action: #selector(quitApp), keyEquivalent: "q")
+        quitItem.target = self
+        quitItem.isEnabled = true
         menu.addItem(quitItem)
         
         statusItem.menu = menu
@@ -125,16 +145,28 @@ class StatusBarManager: NSObject {
     func updateStatusBarIcon() {
         blockManager.checkAndResetIfNewDay()
         let isBlocked = blockManager.isBlockedToday()
-        let iconText = isBlocked ? "🚫" : "⏱️"
         
         let button = statusItem.button!
-        button.title = iconText
+        button.title = ""
+        button.imagePosition = .imageOnly
+        button.image = makeStatusBarImage()
         button.toolTip = isBlocked ? "抖音已拉黑" : "抖音监控中"
     }
     
     @objc func openSettings() {
-        let settingsWindow = SettingsWindow(settingsManager: settingsManager, statsTracker: statsTracker, blockManager: blockManager)
-        settingsWindow.show()
+        if settingsWindow == nil {
+            settingsWindow = SettingsWindow(
+                settingsManager: settingsManager,
+                statsTracker: statsTracker,
+                blockManager: blockManager,
+                onSettingsSaved: { [weak self] in
+                    self?.refreshStatusUI()
+                }
+            )
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.settingsWindow?.show()
+        }
     }
     
     @objc func quitApp() {
@@ -143,11 +175,18 @@ class StatusBarManager: NSObject {
     }
     
     func showBlockNotification() {
-        let notification = NSUserNotification()
-        notification.title = "抖音已拉黑"
-        notification.informativeText = "今日使用时间已达上限，抖音已被拉黑，明日自动恢复。"
-        notification.soundName = NSUserNotificationDefaultSoundName
-        NSUserNotificationCenter.default.deliver(notification)
+        let content = UNMutableNotificationContent()
+        content.title = "抖音已拉黑"
+        content.body = "今日使用时间已达上限，抖音已被拉黑，明日自动恢复。"
+        content.sound = .default
+        
+        let request = UNNotificationRequest(
+            identifier: "douyin-limit-reached",
+            content: content,
+            trigger: nil
+        )
+        
+        UNUserNotificationCenter.current().add(request)
     }
     
     func formatTime(seconds: Double) -> String {
@@ -167,5 +206,29 @@ class StatusBarManager: NSObject {
     func cleanup() {
         timer?.invalidate()
         monitor.stop()
+    }
+    
+    private func makeStatusBarImage() -> NSImage? {
+        guard let image = NSImage(named: statusBarLogoName)?.copy() as? NSImage else {
+            return nil
+        }
+        
+        image.size = NSSize(width: 18, height: 18)
+        image.isTemplate = false
+        return image
+    }
+    
+    private func configureNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.delegate = self
+        center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
+    }
+    
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound, .list])
     }
 }

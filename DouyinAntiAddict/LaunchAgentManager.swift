@@ -2,7 +2,9 @@ import Foundation
 
 class LaunchAgentManager {
     private let agentIdentifier = AppConstants.launchAgentIdentifier
-    private let agentFileName = "\(agentIdentifier).plist"
+    private var agentFileName: String {
+        "\(agentIdentifier).plist"
+    }
     
     private var agentURL: URL {
         let home = FileManager.default.homeDirectoryForCurrentUser
@@ -27,7 +29,7 @@ class LaunchAgentManager {
             <key>RunAtLoad</key>
             <true/>
             <key>KeepAlive</key>
-            <true/>
+            <false/>
         </dict>
         </plist>
         """

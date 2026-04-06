@@ -2,28 +2,42 @@ import SwiftUI
 import AppKit
 
 class SettingsWindow {
+    private let viewModel: SettingsViewModel
     var window: NSWindow!
     
-    init(settingsManager: SettingsManager, statsTracker: StatsTracker, blockManager: BlockManager) {
+    init(
+        settingsManager: SettingsManager,
+        statsTracker: StatsTracker,
+        blockManager: BlockManager,
+        onSettingsSaved: @escaping () -> Void = {}
+    ) {
+        viewModel = SettingsViewModel(
+            settingsManager: settingsManager,
+            statsTracker: statsTracker,
+            blockManager: blockManager,
+            onSettingsSaved: onSettingsSaved
+        )
+        
         window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 460),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
         )
         window.title = "抖音防沉迷设置"
+        window.isReleasedWhenClosed = false
+        window.collectionBehavior = [.moveToActiveSpace]
         window.center()
         window.contentView = NSHostingView(
-            rootView: SettingsView(
-                settingsManager: settingsManager,
-                statsTracker: statsTracker,
-                blockManager: blockManager
-            )
+            rootView: SettingsView(viewModel: viewModel)
         )
     }
     
     func show() {
+        viewModel.reloadFromSettings()
+        window.deminiaturize(nil)
         window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
         NSApp.activate(ignoringOtherApps: true)
     }
 }
@@ -31,97 +45,107 @@ class SettingsWindow {
 struct SettingsView: View {
     @ObservedObject var viewModel: SettingsViewModel
     
-    init(settingsManager: SettingsManager, statsTracker: StatsTracker, blockManager: BlockManager) {
-        _viewModel = ObservedObject(
-            wrappedValue: SettingsViewModel(
-                settingsManager: settingsManager,
-                statsTracker: statsTracker,
-                blockManager: blockManager
-            )
-        )
-    }
-    
     var body: some View {
         VStack(spacing: 20) {
             Text("抖音防沉迷设置")
                 .font(.title2)
                 .fontWeight(.bold)
             
-            VStack(spacing: 15) {
-                HStack {
-                    Text("每日限额:")
-                    TextField("分钟", value: $viewModel.dailyLimitMinutes, format: .number)
-                        .frame(width: 80)
-                    Text("分钟")
-                }
-                
-                Divider()
-                
-                HStack {
-                    Text("今日已使用:")
-                    Spacer()
-                    Text(viewModel.todayUsedText)
-                        .fontWeight(.semibold)
-                }
-                
-                HStack {
-                    Text("剩余时间:")
-                    Spacer()
-                    Text(viewModel.remainingText)
-                        .fontWeight(.semibold)
-                        .foregroundColor(viewModel.isBlocked ? .red : .green)
-                }
-                
-                Divider()
-                
-                if viewModel.isBlocked {
-                    HStack {
-                        Image(systemName: "lock.fill")
-                            .foregroundColor(.red)
-                        Text("今日已拉黑，明日自动恢复")
-                            .foregroundColor(.red)
-                    }
-                } else {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text("监控正常运行")
-                            .foregroundColor(.green)
-                    }
-                }
-                
-                Divider()
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("最近7天使用情况:")
-                        .fontWeight(.semibold)
-                    
-                    ForEach(viewModel.weeklyStats, id: \.date) { stat in
+            ScrollView {
+                VStack(spacing: 15) {
+                    VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text(stat.date)
-                                .frame(width: 80, alignment: .leading)
-                            ProgressView(value: Double(stat.seconds) / 3600.0)
-                                .frame(height: 8)
-                            Text(formatTime(seconds: Double(stat.seconds)))
-                                .frame(width: 80, alignment: .trailing)
+                            Text("每日限额:")
+                            Spacer()
+                            Text("\(viewModel.dailyLimitDisplayText) 分钟")
+                                .fontWeight(.semibold)
+                                .frame(width: 90, alignment: .trailing)
+                            Stepper("", value: $viewModel.dailyLimitMinutes, in: 1...720, step: 1)
+                                .labelsHidden()
+                        }
+                        
+                        Slider(value: $viewModel.dailyLimitMinutes, in: 1...720, step: 1)
+                        
+                        Text("拖动滑块或点击步进器即可自动保存，范围 1-720 分钟")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Divider()
+                    
+                    HStack {
+                        Text("今日已使用:")
+                        Spacer()
+                        Text(viewModel.todayUsedText)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    HStack {
+                        Text("剩余时间:")
+                        Spacer()
+                        Text(viewModel.remainingText)
+                            .fontWeight(.semibold)
+                            .foregroundColor(viewModel.isBlocked ? .red : .green)
+                    }
+                    
+                    Divider()
+                    
+                    if viewModel.isBlocked {
+                        HStack {
+                            Image(systemName: "lock.fill")
+                                .foregroundColor(.red)
+                            Text("今日已拉黑，明日自动恢复")
+                                .foregroundColor(.red)
+                        }
+                    } else {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("监控正常运行")
+                                .foregroundColor(.green)
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("最近7天使用情况:")
+                            .fontWeight(.semibold)
+                        
+                        ForEach(viewModel.weeklyStats, id: \.date) { stat in
+                            HStack {
+                                Text(stat.date)
+                                    .frame(width: 80, alignment: .leading)
+                                ProgressView(value: Double(stat.seconds) / 3600.0)
+                                    .frame(height: 8)
+                                Text(formatTime(seconds: Double(stat.seconds)))
+                                    .frame(width: 80, alignment: .trailing)
+                            }
                         }
                     }
                 }
+                .padding()
+                .frame(maxWidth: .infinity)
             }
-            .padding()
             
             HStack {
-                Button("保存设置") {
-                    viewModel.saveSettings()
-                }
-                .buttonStyle(.borderedProminent)
+                Text(viewModel.saveStatusText)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
                 
                 Spacer()
+                
+                Button("恢复默认 60 分钟") {
+                    viewModel.resetToDefault()
+                }
             }
             .padding(.horizontal)
         }
         .padding()
-        .frame(width: 400, height: 300)
+        .frame(width: 460, height: 460)
+        .onChange(of: viewModel.dailyLimitMinutes) { _ in
+            viewModel.handleDailyLimitChanged()
+        }
     }
     
     func formatTime(seconds: Double) -> String {
@@ -143,28 +167,51 @@ class SettingsViewModel: ObservableObject {
     let settingsManager: SettingsManager
     let statsTracker: StatsTracker
     let blockManager: BlockManager
+    private let onSettingsSaved: () -> Void
+    private var isReloading = false
     
     @Published var dailyLimitMinutes: Double
     @Published var isBlocked: Bool
     @Published var todayUsedText: String
     @Published var remainingText: String
     @Published var weeklyStats: [StatsTracker.DayStats]
+    @Published var saveStatusText: String
     
-    init(settingsManager: SettingsManager, statsTracker: StatsTracker, blockManager: BlockManager) {
+    init(
+        settingsManager: SettingsManager,
+        statsTracker: StatsTracker,
+        blockManager: BlockManager,
+        onSettingsSaved: @escaping () -> Void
+    ) {
         self.settingsManager = settingsManager
         self.statsTracker = statsTracker
         self.blockManager = blockManager
+        self.onSettingsSaved = onSettingsSaved
         
-        self.dailyLimitMinutes = settingsManager.getDailyLimitMinutes()
-        if self.dailyLimitMinutes <= 0 {
-            self.dailyLimitMinutes = AppConstants.defaultDailyLimitMinutes
-        }
+        let savedLimit = settingsManager.getDailyLimitMinutes()
+        let dailyLimitMinutes = savedLimit > 0 ? savedLimit : AppConstants.defaultDailyLimitMinutes
+        self.dailyLimitMinutes = Self.clampMinutes(dailyLimitMinutes)
         
         self.isBlocked = blockManager.isBlockedToday()
         self.todayUsedText = ""
         self.remainingText = ""
         self.weeklyStats = []
+        self.saveStatusText = ""
         
+        reloadFromSettings()
+    }
+    
+    var dailyLimitDisplayText: String {
+        Self.formatMinutes(dailyLimitMinutes)
+    }
+    
+    func reloadFromSettings() {
+        let savedLimit = settingsManager.getDailyLimitMinutes()
+        let dailyLimitMinutes = savedLimit > 0 ? savedLimit : AppConstants.defaultDailyLimitMinutes
+        isReloading = true
+        self.dailyLimitMinutes = Self.clampMinutes(dailyLimitMinutes)
+        isReloading = false
+        saveStatusText = "当前已保存 \(Self.formatMinutes(self.dailyLimitMinutes)) 分钟"
         updateStats()
     }
     
@@ -173,6 +220,7 @@ class SettingsViewModel: ObservableObject {
         let limitSeconds = settingsManager.getDailyLimitSeconds()
         let remainingSeconds = max(0, limitSeconds - todaySeconds)
         
+        isBlocked = blockManager.isBlockedToday()
         todayUsedText = formatTime(seconds: todaySeconds)
         remainingText = formatTime(seconds: remainingSeconds)
         
@@ -180,8 +228,33 @@ class SettingsViewModel: ObservableObject {
     }
     
     func saveSettings() {
-        settingsManager.setDailyLimitMinutes(dailyLimitMinutes)
+        let minutes = Self.clampMinutes(dailyLimitMinutes)
+        dailyLimitMinutes = minutes
+        settingsManager.setDailyLimitMinutes(minutes)
+        saveStatusText = "已自动保存为 \(Self.formatMinutes(minutes)) 分钟"
         updateStats()
+        onSettingsSaved()
+    }
+    
+    func handleDailyLimitChanged() {
+        guard !isReloading else {
+            return
+        }
+        
+        saveSettings()
+    }
+    
+    func resetToDefault() {
+        dailyLimitMinutes = AppConstants.defaultDailyLimitMinutes
+        saveSettings()
+    }
+    
+    private static func clampMinutes(_ minutes: Double) -> Double {
+        min(max(minutes.rounded(), 1), 720)
+    }
+    
+    private static func formatMinutes(_ minutes: Double) -> String {
+        String(Int(clampMinutes(minutes)))
     }
     
     func formatTime(seconds: Double) -> String {

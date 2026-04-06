@@ -39,8 +39,8 @@ class StatsTracker {
     }
     
     func getStatsForDays(_ days: Int) -> [DayStats] {
-        let allStats = getAllStats()
-        return Array(allStats.prefix(days))
+        let allStats = getAllStats().sorted { $0.date < $1.date }
+        return Array(allStats.suffix(days))
     }
     
     private func getAllStats() -> [DayStats] {

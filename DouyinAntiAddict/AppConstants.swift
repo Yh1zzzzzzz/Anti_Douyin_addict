@@ -13,9 +13,9 @@ struct AppConstants {
     
     static let blockComment = "# DouyinAntiAddict - BLOCKED"
     
-    static let pfAnchorName = "douyin_anti_addict"
+    static let pfAnchorName = "com.apple/douyin_anti_addict"
     
-    static let pfAnchorPath = "/etc/pf.anchors/\(pfAnchorName).conf"
+    static let pfAnchorPath = "/etc/pf.anchors/com.apple.douyin_anti_addict.conf"
     
     static let launchAgentIdentifier = "com.douyinantiaddict.launcher"
     

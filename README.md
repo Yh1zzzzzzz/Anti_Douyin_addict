@@ -1,96 +1,16 @@
 # DouyinAntiAddict - 抖音防沉迷 macOS 应用
 
-> **AI 对话开发历史 (Prompt)** 详见文末 → [📜 完整开发对话](#完整开发对话prompt)
+<p align="center">
+  <img src="./logo.png" alt="DouyinAntiAddict Logo" width="180">
+</p>
 
-一个 macOS 原生菜单栏应用，监控并统计你每天浏览抖音的时长，超过设定时间后自动拉黑抖音网站（当日不可撤销）。
+> **完整 Prompt（原始版）已置顶保留。**
+> 为了方便归档和复现，下面先放原始开发对话；文末另附一份仅精简 Assistant 回复的速览版。
 
-## 功能
+## 完整 Prompt（原始版）
 
-- **实时监控**: 自动检测 Safari、Chrome、Firefox、Edge、Arc、Brave、Opera 等浏览器中的抖音访问
-- **时间统计**: 精确统计每日抖音浏览时长
-- **自动拉黑**: 超过限额后通过修改 hosts 文件屏蔽抖音（当日不可撤销）
-- **次日恢复**: 每天零点自动重置，恢复访问
-- **开机自启**: 通过 LaunchAgent 实现开机自动启动
-- **菜单栏界面**: 简洁的菜单栏图标显示状态
-- **设置面板**: 可自定义每日使用限额
-
-## 系统要求
-
-- macOS 13.0 (Ventura) 或更高版本
-- Xcode 命令行工具（用于编译）
-
-## 编译
-
-```bash
-chmod +x build.sh
-./build.sh
-```
-
-## 运行
-
-```bash
-open build/DouyinAntiAddict.app
-```
-
-## 安装到 Applications
-
-```bash
-cp -r build/DouyinAntiAddict.app /Applications/
-```
-
-## 权限说明
-
-首次运行时，系统会请求以下权限：
-
-1. **辅助功能权限**: 用于监控浏览器活动（系统设置 > 隐私与安全性 > 辅助功能）
-2. **管理员权限**: 修改 hosts 文件以屏蔽抖音（拉黑时会弹出密码验证）
-
-## 工作原理
-
-1. **监控**: 每 5 秒检查一次当前活跃浏览器窗口 URL
-2. **统计**: 如果 URL 包含 douyin.com 相关域名，累计使用时间
-3. **拉黑**: 当使用时间超过设定限额，向 `/etc/hosts` 添加屏蔽规则
-4. **恢复**: 次日零点后统计重置，可手动或通过设置面板解除屏蔽
-
-## 屏蔽的域名
-
-- www.douyin.com
-- douyin.com
-- live.douyin.com
-- www.iesdouyin.com
-- iesdouyin.com
-
-## 项目结构
-
-```
-Douyin_anti_addict/
-├── DouyinAntiAddict/
-│   ├── AppConstants.swift        # 常量定义
-│   ├── DouyinAntiAddictApp.swift # 应用入口
-│   ├── DouyinMonitor.swift       # 抖音使用监控
-│   ├── HostsManager.swift        # hosts 文件管理
-│   ├── StatsTracker.swift        # 统计数据管理
-│   ├── SettingsManager.swift     # 用户设置管理
-│   ├── LaunchAgentManager.swift  # 开机自启管理
-│   ├── StatusBarManager.swift    # 菜单栏控制器
-│   ├── SettingsWindow.swift      # 设置窗口
-│   └── Info.plist                # 应用配置
-├── build.sh                      # 编译脚本
-└── README.md                     # 说明文档
-```
-
-## 注意事项
-
-- 拉黑操作需要管理员密码（修改 hosts 文件）
-- 拉黑后当日无法通过本应用撤销，需手动编辑 `/etc/hosts` 文件
-- 确保在系统设置中授予辅助功能权限，否则无法监控浏览器
-
----
-
-## 完整开发对话 (Prompt)
-
-<details>
-<summary>点击展开完整开发对话</summary>
+<details open>
+<summary>点击展开完整原始开发对话</summary>
 
 ### 对话记录
 
@@ -156,3 +76,129 @@ Douyin_anti_addict/
 
 </details>
 
+## 项目简介
+
+一个 macOS 原生菜单栏应用，监控并统计你每天浏览抖音的时长，超过设定时间后自动拉黑抖音网站，并在第二天自动恢复访问。
+
+## 功能
+
+- **实时监控**: 自动检测 Safari、Chrome、Firefox、Edge、Arc、Brave、Opera 等浏览器中的抖音访问
+- **时间统计**: 按天累计抖音浏览时长
+- **双层封锁**: 同时使用 `hosts` 和 `pf` 防火墙拦截，兼顾普通 DNS 场景与 VPN/TUN 场景
+- **次日恢复**: 每天零点自动重置统计并解除封锁
+- **开机自启**: 通过 LaunchAgent 开机后自动启动
+- **菜单栏界面**: 菜单栏图标显示当前状态和剩余时长
+- **设置面板**: 可自定义每日使用限额，并查看最近 7 天统计
+
+## 系统要求
+
+- macOS 13.0 (Ventura) 或更高版本
+- 完整版 Xcode（已验证 `xcodebuild` 构建流程）
+
+## 编译
+
+```bash
+chmod +x build.sh
+./build.sh
+```
+
+## 运行
+
+```bash
+open build/DouyinAntiAddict.app
+```
+
+## 安装到 Applications
+
+```bash
+cp -r build/DouyinAntiAddict.app /Applications/
+```
+
+## 权限说明
+
+首次运行时，系统会请求以下权限：
+
+1. **辅助功能权限**: 用于读取当前浏览器窗口状态
+2. **通知权限**: 用于在达到当日上限时发出系统通知
+3. **管理员权限**: 用于修改 `hosts` 和加载 `pf` 规则
+
+## 工作原理
+
+1. **监控**: 每 5 秒检查一次当前前台浏览器标签页 URL
+2. **统计**: 仅当 URL 的真实 host 属于 `douyin.com` / `iesdouyin.com` 域名时累计时间
+3. **封锁**: 超过限额后，同时写入 `hosts` 规则并加载 `pf` 规则
+4. **恢复**: 记录封锁日期，到第二天自动解除
+
+## 屏蔽的域名
+
+- `www.douyin.com`
+- `douyin.com`
+- `live.douyin.com`
+- `www.iesdouyin.com`
+- `iesdouyin.com`
+
+## 项目结构
+
+```text
+Douyin_anti_addict/
+├── DouyinAntiAddict/
+│   ├── AppConstants.swift
+│   ├── BlockManager.swift
+│   ├── DouyinAntiAddictApp.swift
+│   ├── DouyinMonitor.swift
+│   ├── LaunchAgentManager.swift
+│   ├── SettingsManager.swift
+│   ├── SettingsWindow.swift
+│   ├── StatsTracker.swift
+│   ├── StatusBarManager.swift
+│   ├── Assets.xcassets/
+│   └── Info.plist
+├── build.sh
+├── logo.png
+└── README.md
+```
+
+## 注意事项
+
+- 超限封锁需要管理员密码
+- 如果没有授予辅助功能权限，浏览器监控不会生效
+- `pf` 规则会覆盖普通 DNS 绕过路径，但系统安全策略、企业网络配置和浏览器行为仍可能影响实际效果
+
+---
+
+## 精简开发对话（Assistant 回复精简版）
+
+<details>
+<summary>点击展开精简版</summary>
+
+**User:** 我想写一个macOS原生程序，监控、统计我电脑每天浏览抖音(https://www.douyin.com/)的时长，如果超过我设定的时长，今日（仅限于今日）拉黑抖音的网站不再允许访问且无法撤销。要求有图形化界面，开机自动启动
+
+**Assistant:** 先把项目拆成入口、监控、统计、封锁、设置、自启几个模块，按菜单栏 macOS 应用来实现。
+
+---
+
+**User:** 这个程序的核心功能实现是如何进行的？我的电脑一直是使用VPN全局TUN模式，这一点对于我们的核心功能有没有影响？
+
+**Assistant:** 解释监控链路，同时指出单靠 `hosts` 可能被 VPN/TUN 绕过，建议补 `pf` 防火墙。
+
+**User 选择:** hosts + pf 防火墙（推荐）
+
+---
+
+**Assistant:** 引入 `BlockManager`，把封锁升级为 `hosts + pf` 双层方案。
+
+---
+
+**User:** 这个限制是保证只会影响当日的抖音浏览对吗？第二天会重制？
+
+**Assistant:** 发现“统计会重置，但封锁不会自动解除”的问题，并补上按天记录与跨天自动解封逻辑。
+
+---
+
+**User:** 把这个项目推送到git@github.com:Yh1zzzzzzz/Anti_Douyin_addict.git，在README的最显眼的地方附上我们的聊天历史Prompt
+
+**User:** 继续未完成的任务
+
+**Assistant:** 继续完善 README、工程配置、构建链路和后续修复。
+
+</details>

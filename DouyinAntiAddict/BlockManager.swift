@@ -8,43 +8,13 @@ class BlockManager {
     private let blockedDateKey = "DouyinAntiAddict_BlockedDate"
     
     func isBlocked() -> Bool {
-        return isHostsBlocked() || isPFRulesActive()
-    }
-    
-    func block() {
-        guard !isBlocked() else { return }
-        
-        let today = getTodayString()
-        UserDefaults.standard.set(today, forKey: blockedDateKey)
-        
-        applyHostsBlock()
-        applyPFBlock()
-    }
-    
-    func unblock() {
-        removeHostsBlock()
-        removePFBlock()
-        UserDefaults.standard.removeObject(forKey: blockedDateKey)
-    }
-    
-    func checkAndResetIfNewDay() {
-        guard isBlocked() else { return }
-        
-        guard let blockedDate = UserDefaults.standard.string(forKey: blockedDateKey) else {
-            unblock()
-            return
-        }
-        
-        let today = getTodayString()
-        if blockedDate != today {
-            unblock()
-        }
+        return isHostsBlocked() || isPFBlockInstalled()
     }
     
     func isBlockedToday() -> Bool {
         guard isBlocked() else { return false }
         
-        let savedDate = UserDefaults.standard.string(forKey: blockDateKey) ?? ""
+        let savedDate = UserDefaults.standard.string(forKey: blockedDateKey) ?? ""
         let today = getTodayString()
         
         return savedDate == today
@@ -53,16 +23,20 @@ class BlockManager {
     func block() {
         guard !isBlocked() else { return }
         
-        UserDefaults.standard.set(getTodayString(), forKey: blockDateKey)
+        let hostsBlocked = applyHostsBlock()
+        let pfBlocked = applyPFBlock()
         
-        applyHostsBlock()
-        applyPFBlock()
+        guard hostsBlocked || pfBlocked else {
+            return
+        }
+        
+        UserDefaults.standard.set(getTodayString(), forKey: blockedDateKey)
     }
     
     func unblock() {
-        removeHostsBlock()
-        removePFBlock()
-        UserDefaults.standard.removeObject(forKey: blockDateKey)
+        _ = removeHostsBlock()
+        _ = removePFBlock()
+        UserDefaults.standard.removeObject(forKey: blockedDateKey)
     }
     
     func checkAndResetIfNewDay() {
@@ -80,8 +54,8 @@ class BlockManager {
         return content.contains(AppConstants.blockComment)
     }
     
-    private func applyHostsBlock() {
-        guard !isHostsBlocked() else { return }
+    private func applyHostsBlock() -> Bool {
+        guard !isHostsBlocked() else { return true }
         
         var lines: [String] = []
         if let content = try? String(contentsOf: hostsURL, encoding: .utf8) {
@@ -96,13 +70,13 @@ class BlockManager {
         }
         
         let newContent = lines.joined(separator: "\n") + "\n"
-        writeHostsFile(newContent)
+        return writeHostsFile(newContent)
     }
     
-    private func removeHostsBlock() {
-        guard isHostsBlocked() else { return }
+    private func removeHostsBlock() -> Bool {
+        guard isHostsBlocked() else { return true }
         
-        guard var content = try? String(contentsOf: hostsURL, encoding: .utf8) else { return }
+        guard let content = try? String(contentsOf: hostsURL, encoding: .utf8) else { return false }
         
         let lines = content.components(separatedBy: .newlines)
         let filteredLines = lines.filter { !$0.contains(AppConstants.blockComment) }
@@ -112,26 +86,24 @@ class BlockManager {
             newContent += "\n"
         }
         
-        writeHostsFile(newContent)
+        return writeHostsFile(newContent)
     }
     
-    private func writeHostsFile(_ content: String) {
+    private func writeHostsFile(_ content: String) -> Bool {
         let escaped = content.replacingOccurrences(of: "'", with: "'\\''")
         let script = "do shell script \"echo '\(escaped)' > \(AppConstants.hostsPath)\" with administrator privileges"
-        executeAppleScript(script)
+        return executeAppleScript(script)
     }
     
     // MARK: - pf firewall blocking
     
-    private func isPFRulesActive() -> Bool {
-        let script = "do shell script \"pfctl -a \(pfAnchorName) -sr 2>/dev/null | grep -c 'block drop'\""
-        guard let output = executeAppleScriptAndGetOutput(script) else { return false }
-        let count = Int(output.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
-        return count > 0
+    private func isPFBlockInstalled() -> Bool {
+        return FileManager.default.fileExists(atPath: pfAnchorPath)
     }
     
-    private func applyPFBlock() {
+    private func applyPFBlock() -> Bool {
         let resolvedIPs = resolveDomainsToIPs()
+        guard !resolvedIPs.isEmpty else { return false }
         
         var pfRules = "table <douyin_blocked> {\n"
         for ip in resolvedIPs {
@@ -140,23 +112,24 @@ class BlockManager {
         pfRules += "}\n"
         pfRules += "block drop quick inet proto tcp from any to <douyin_blocked> port {80, 443}\n"
         pfRules += "block drop quick inet6 proto tcp from any to <douyin_blocked> port {80, 443}\n"
-        pfRules += "block drop quick inet proto udp from any to <douyin_blocked> port 53\n"
+        pfRules += "block drop quick inet proto udp from any to <douyin_blocked> port 443\n"
+        pfRules += "block drop quick inet6 proto udp from any to <douyin_blocked> port 443\n"
         
         let anchorDir = (pfAnchorPath as NSString).deletingLastPathComponent
         let escapedRules = pfRules.replacingOccurrences(of: "'", with: "'\\''")
         
         let script = """
-        do shell script "mkdir -p \(anchorDir) && echo '\(escapedRules)' > \(pfAnchorPath) && pfctl -ef /etc/pf.conf && pfctl -a \(pfAnchorName) -f \(pfAnchorPath)" with administrator privileges
+        do shell script "mkdir -p \(anchorDir) && echo '\(escapedRules)' > \(pfAnchorPath) && pfctl -E >/dev/null 2>&1 && pfctl -a \(pfAnchorName) -f \(pfAnchorPath) || { rm -f \(pfAnchorPath); exit 1; }" with administrator privileges
         """
         
-        executeAppleScript(script)
+        return executeAppleScript(script)
     }
     
-    private func removePFBlock() {
+    private func removePFBlock() -> Bool {
         let clearScript = """
         do shell script "echo '' | pfctl -a \(pfAnchorName) -f - 2>/dev/null; rm -f \(pfAnchorPath)" with administrator privileges
         """
-        executeAppleScript(clearScript)
+        return executeAppleScript(clearScript)
     }
     
     private func resolveDomainsToIPs() -> [String] {
@@ -207,11 +180,12 @@ class BlockManager {
     
     // MARK: - Helper
     
-    private func executeAppleScript(_ script: String) {
-        _ = executeAppleScriptAndGetOutput(script)
+    private func executeAppleScript(_ script: String) -> Bool {
+        guard let result = runAppleScript(script) else { return false }
+        return result.status == 0
     }
     
-    private func executeAppleScriptAndGetOutput(_ script: String) -> String? {
+    private func runAppleScript(_ script: String) -> (output: String, status: Int32)? {
         let process = Process()
         process.launchPath = "/usr/bin/osascript"
         process.arguments = ["-e", script]
@@ -225,7 +199,8 @@ class BlockManager {
             process.waitUntilExit()
             
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            return String(data: data, encoding: .utf8)
+            let output = String(data: data, encoding: .utf8) ?? ""
+            return (output, process.terminationStatus)
         } catch {
             print("Failed to execute script: \(error)")
             return nil
