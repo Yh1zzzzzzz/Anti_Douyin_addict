@@ -1,0 +1,454 @@
+{
+	"classes" : {
+
+	},
+	"objectVersion" : 56,
+	"objects" : {
+		"29193D6B2E1A4C5F00000001" : {
+			"isa" : "PBXAggregateTarget",
+			"name" : "Pods",
+			"productName" : "Pods",
+			"buildConfigurationList" : "29193D6B2E1A4C5F00000002",
+			"buildPhases" : [
+
+			],
+			"buildRules" : [
+
+			],
+			"dependencies" : [
+
+			]
+		},
+		"29193D6B2E1A4C5F00000002" : {
+			"isa" : "XCConfigurationList",
+			"buildConfigurations" : [
+				{
+					"baseConfigurationReference" : "",
+					"buildSettings" : {
+
+					},
+					"name" : "Debug"
+				},
+				{
+					"baseConfigurationReference" : "",
+					"buildSettings" : {
+
+					},
+					"name" : "Release"
+				}
+			],
+			"defaultConfigurationIsVisible" : 0,
+			"defaultConfigurationName" : "Release"
+		},
+		"29193D6B2E1A4C5F00000010" : {
+			"isa" : "PBXFileReference",
+			"path" : "DouyinAntiAddict.app",
+			"explicitFileType" : "wrapper.application",
+			"includeInIndex" : 0,
+			"sourceTree" : "BUILT_PRODUCTS_DIR"
+		},
+		"29193D6B2E1A4C5F00000011" : {
+			"isa" : "PBXSourcesBuildPhase",
+			"buildActionMask" : 2147483647,
+			"files" : [
+				"29193D6B2E1A4C5F00000020",
+				"29193D6B2E1A4C5F00000021",
+				"29193D6B2E1A4C5F00000022",
+				"29193D6B2E1A4C5F00000023",
+				"29193D6B2E1A4C5F00000024",
+				"29193D6B2E1A4C5F00000025",
+				"29193D6B2E1A4C5F00000026",
+				"29193D6B2E1A4C5F00000027",
+				"29193D6B2E1A4C5F00000028"
+			],
+			"runOnlyForDeploymentPostprocessing" : 0
+		},
+		"29193D6B2E1A4C5F00000012" : {
+			"isa" : "PBXFrameworksBuildPhase",
+			"buildActionMask" : 2147483647,
+			"files" : [
+
+			],
+			"runOnlyForDeploymentPostprocessing" : 0
+		},
+		"29193D6B2E1A4C5F00000013" : {
+			"isa" : "PBXResourcesBuildPhase",
+			"buildActionMask" : 2147483647,
+			"files" : [
+
+			],
+			"runOnlyForDeploymentPostprocessing" : 0
+		},
+		"29193D6B2E1A4C5F00000014" : {
+			"isa" : "PBXNativeTarget",
+			"buildConfigurationList" : "29193D6B2E1A4C5F00000030",
+			"buildPhases" : [
+				"29193D6B2E1A4C5F00000011",
+				"29193D6B2E1A4C5F00000012",
+				"29193D6B2E1A4C5F00000013"
+			],
+			"buildRules" : [
+
+			],
+			"dependencies" : [
+
+			],
+			"name" : "DouyinAntiAddict",
+			"productName" : "DouyinAntiAddict",
+			"productReference" : "29193D6B2E1A4C5F00000010",
+			"productType" : "com.apple.product-type.application"
+		},
+		"29193D6B2E1A4C5F00000015" : {
+			"isa" : "PBXProject",
+			"attributes" : {
+				"BuildIndependentTargetsInParallel" : 1,
+				"LastSwiftUpdateCheck" : 1500,
+				"LastUpgradeCheck" : 1500,
+				"TargetAttributes" : {
+					"29193D6B2E1A4C5F00000014" : {
+						"CreatedOnToolsVersion" : "15.0"
+					}
+				}
+			},
+			"buildConfigurationList" : "29193D6B2E1A4C5F00000040",
+			"compatibilityVersion" : "Xcode 14.0",
+			"developmentRegion" : "en",
+			"hasScannedForEncodings" : 0,
+			"knownRegions" : [
+				"en",
+				"Base"
+			],
+			"mainGroup" : "29193D6B2E1A4C5F00000050",
+			"productRefGroup" : "29193D6B2E1A4C5F00000051",
+			"projectDirPath" : "",
+			"projectRoot" : "",
+			"targets" : [
+				"29193D6B2E1A4C5F00000014"
+			]
+		},
+		"29193D6B2E1A4C5F00000020" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000060"
+		},
+		"29193D6B2E1A4C5F00000021" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000061"
+		},
+		"29193D6B2E1A4C5F00000022" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000062"
+		},
+		"29193D6B2E1A4C5F00000023" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000063"
+		},
+		"29193D6B2E1A4C5F00000024" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000064"
+		},
+		"29193D6B2E1A4C5F00000025" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000065"
+		},
+		"29193D6B2E1A4C5F00000026" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000066"
+		},
+		"29193D6B2E1A4C5F00000027" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000067"
+		},
+		"29193D6B2E1A4C5F00000028" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000068"
+		},
+		"29193D6B2E1A4C5F00000029" : {
+			"isa" : "PBXBuildFile",
+			"fileRef" : "29193D6B2E1A4C5F00000069"
+		},
+		"29193D6B2E1A4C5F00000030" : {
+			"isa" : "XCConfigurationList",
+			"buildConfigurations" : [
+				{
+					"baseConfigurationReference" : "",
+					"buildSettings" : {
+						"ASSETCATALOG_COMPILER_APPICON_NAME" : "AppIcon",
+						"CODE_SIGN_STYLE" : "Automatic",
+						"COMBINE_HIDPI_IMAGES" : "YES",
+						"CURRENT_PROJECT_VERSION" : "1",
+						"DEVELOPMENT_TEAM" : "",
+						"GENERATE_INFOPLIST_FILE" : "NO",
+						"INFOPLIST_FILE" : "DouyinAntiAddict/Info.plist",
+						"INFOPLIST_KEY_LSApplicationCategoryType" : "public.app-category.utilities",
+						"INFOPLIST_KEY_LSUIElement" : "YES",
+						"INFOPLIST_KEY_NSMainStoryboardFile" : "",
+						"INFOPLIST_KEY_NSPrincipalClass" : "NSApplication",
+						"LD_RUNPATH_SEARCH_PATHS" : [
+							"$(inherited)",
+							"@executable_path/../Frameworks"
+						],
+						"MARKETING_VERSION" : "1.0",
+						"PRODUCT_BUNDLE_IDENTIFIER" : "com.douyinantiaddict.app",
+						"SWIFT_EMIT_LOC_STRINGS" : "YES",
+						"SWIFT_VERSION" : "5.0"
+					},
+					"name" : "Debug"
+				},
+				{
+					"baseConfigurationReference" : "",
+					"buildSettings" : {
+						"ASSETCATALOG_COMPILER_APPICON_NAME" : "AppIcon",
+						"CODE_SIGN_STYLE" : "Automatic",
+						"COMBINE_HIDPI_IMAGES" : "YES",
+						"CURRENT_PROJECT_VERSION" : "1",
+						"DEVELOPMENT_TEAM" : "",
+						"GENERATE_INFOPLIST_FILE" : "NO",
+						"INFOPLIST_FILE" : "DouyinAntiAddict/Info.plist",
+						"INFOPLIST_KEY_LSApplicationCategoryType" : "public.app-category.utilities",
+						"INFOPLIST_KEY_LSUIElement" : "YES",
+						"INFOPLIST_KEY_NSMainStoryboardFile" : "",
+						"INFOPLIST_KEY_NSPrincipalClass" : "NSApplication",
+						"LD_RUNPATH_SEARCH_PATHS" : [
+							"$(inherited)",
+							"@executable_path/../Frameworks"
+						],
+						"MARKETING_VERSION" : "1.0",
+						"PRODUCT_BUNDLE_IDENTIFIER" : "com.douyinantiaddict.app",
+						"SWIFT_EMIT_LOC_STRINGS" : "YES",
+						"SWIFT_VERSION" : "5.0"
+					},
+					"name" : "Release"
+				}
+			],
+			"defaultConfigurationIsVisible" : 0,
+			"defaultConfigurationName" : "Release"
+		},
+		"29193D6B2E1A4C5F00000040" : {
+			"isa" : "XCConfigurationList",
+			"buildConfigurations" : [
+				{
+					"baseConfigurationReference" : "",
+					"buildSettings" : {
+						"ALWAYS_SEARCH_USER_PATHS" : "NO",
+						"BUILD_LIBRARY_FOR_DISTRIBUTION" : "NO",
+						"CLANG_ANALYZER_NONNULL" : "YES",
+						"CLANG_CXX_LANGUAGE_STANDARD" : "gnu++20",
+						"CLANG_ENABLE_MODULES" : "YES",
+						"CLANG_ENABLE_OBJC_ARC" : "YES",
+						"CLANG_ENABLE_OBJC_WEAK" : "YES",
+						"CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING" : "YES",
+						"CLANG_WARN_BOOL_CONVERSION" : "YES",
+						"CLANG_WARN_COMMA" : "YES",
+						"CLANG_WARN_CONSTANT_CONVERSION" : "YES",
+						"CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS" : "YES",
+						"CLANG_WARN_DIRECT_OBJC_ISA_USAGE" : "YES_ERROR",
+						"CLANG_WARN_DOCUMENTATION_COMMENTS" : "YES",
+						"CLANG_WARN_EMPTY_BODY" : "YES",
+						"CLANG_WARN_ENUM_CONVERSION" : "YES",
+						"CLANG_WARN_INFINITE_RECURSION" : "YES",
+						"CLANG_WARN_INT_CONVERSION" : "YES",
+						"CLANG_WARN_NON_LITERAL_NULL_CONVERSION" : "YES",
+						"CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF" : "YES",
+						"CLANG_WARN_OBJC_LITERAL_CONVERSION" : "YES",
+						"CLANG_WARN_OBJC_ROOT_CLASS" : "YES_ERROR",
+						"CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER" : "YES",
+						"CLANG_WARN_RANGE_LOOP_ANALYSIS" : "YES",
+						"CLANG_WARN_STRICT_PROTOTYPES" : "YES",
+						"CLANG_WARN_SUSPICIOUS_MOVE" : "YES",
+						"CLANG_WARN_UNGUARDED_AVAILABILITY" : "YES_AGGRESSIVE",
+						"CLANG_WARN_UNREACHABLE_CODE" : "YES",
+						"CLANG_WARN__DUPLICATE_METHOD_MATCH" : "YES",
+						"COPY_PHASE_STRIP" : "NO",
+						"DEBUG_INFORMATION_FORMAT" : "dwarf",
+						"ENABLE_STRICT_OBJC_MSGSEND" : "YES",
+						"ENABLE_TESTABILITY" : "YES",
+						"GCC_DYNAMIC_NO_PIC" : "NO",
+						"GCC_NO_COMMON_BLOCKS" : "YES",
+						"GCC_OPTIMIZATION_LEVEL" : "0",
+						"GCC_PREPROCESSOR_DEFINITIONS" : [
+							"DEBUG=1",
+							"$(inherited)"
+						],
+						"GCC_WARN_64_TO_32_BIT_CONVERSION" : "YES",
+						"GCC_WARN_ABOUT_RETURN_TYPE" : "YES_ERROR",
+						"GCC_WARN_UNDECLARED_SELECTOR" : "YES",
+						"GCC_WARN_UNINITIALIZED_AUTOS" : "YES_AGGRESSIVE",
+						"GCC_WARN_UNUSED_FUNCTION" : "YES",
+						"GCC_WARN_UNUSED_VARIABLE" : "YES",
+						"MACOSX_DEPLOYMENT_TARGET" : "13.0",
+						"MTL_ENABLE_DEBUG_INFO" : "INCLUDE_SOURCE",
+						"MTL_FAST_MATH" : "YES",
+						"ONLY_ACTIVE_ARCH" : "YES",
+						"SDKROOT" : "macosx",
+						"SWIFT_ACTIVE_COMPILATION_CONDITIONS" : "DEBUG"
+					},
+					"name" : "Debug"
+				},
+				{
+					"baseConfigurationReference" : "",
+					"buildSettings" : {
+						"ALWAYS_SEARCH_USER_PATHS" : "NO",
+						"BUILD_LIBRARY_FOR_DISTRIBUTION" : "NO",
+						"CLANG_ANALYZER_NONNULL" : "YES",
+						"CLANG_CXX_LANGUAGE_STANDARD" : "gnu++20",
+						"CLANG_ENABLE_MODULES" : "YES",
+						"CLANG_ENABLE_OBJC_ARC" : "YES",
+						"CLANG_ENABLE_OBJC_WEAK" : "YES",
+						"CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING" : "YES",
+						"CLANG_WARN_BOOL_CONVERSION" : "YES",
+						"CLANG_WARN_COMMA" : "YES",
+						"CLANG_WARN_CONSTANT_CONVERSION" : "YES",
+						"CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS" : "YES",
+						"CLANG_WARN_DIRECT_OBJC_ISA_USAGE" : "YES_ERROR",
+						"CLANG_WARN_DOCUMENTATION_COMMENTS" : "YES",
+						"CLANG_WARN_EMPTY_BODY" : "YES",
+						"CLANG_WARN_ENUM_CONVERSION" : "YES",
+						"CLANG_WARN_INFINITE_RECURSION" : "YES",
+						"CLANG_WARN_INT_CONVERSION" : "YES",
+						"CLANG_WARN_NON_LITERAL_NULL_CONVERSION" : "YES",
+						"CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF" : "YES",
+						"CLANG_WARN_OBJC_LITERAL_CONVERSION" : "YES",
+						"CLANG_WARN_OBJC_ROOT_CLASS" : "YES_ERROR",
+						"CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER" : "YES",
+						"CLANG_WARN_RANGE_LOOP_ANALYSIS" : "YES",
+						"CLANG_WARN_STRICT_PROTOTYPES" : "YES",
+						"CLANG_WARN_SUSPICIOUS_MOVE" : "YES",
+						"CLANG_WARN_UNGUARDED_AVAILABILITY" : "YES_AGGRESSIVE",
+						"CLANG_WARN_UNREACHABLE_CODE" : "YES",
+						"CLANG_WARN__DUPLICATE_METHOD_MATCH" : "YES",
+						"COPY_PHASE_STRIP" : "NO",
+						"DEBUG_INFORMATION_FORMAT" : "dwarf-with-dsym",
+						"ENABLE_NS_ASSERTIONS" : "NO",
+						"ENABLE_STRICT_OBJC_MSGSEND" : "YES",
+						"GCC_WARN_64_TO_32_BIT_CONVERSION" : "YES",
+						"GCC_WARN_ABOUT_RETURN_TYPE" : "YES_ERROR",
+						"GCC_WARN_UNDECLARED_SELECTOR" : "YES",
+						"GCC_WARN_UNINITIALIZED_AUTOS" : "YES_AGGRESSIVE",
+						"GCC_WARN_UNUSED_FUNCTION" : "YES",
+						"GCC_WARN_UNUSED_VARIABLE" : "YES",
+						"MACOSX_DEPLOYMENT_TARGET" : "13.0",
+						"MTL_ENABLE_DEBUG_INFO" : "NO",
+						"MTL_FAST_MATH" : "YES",
+						"SDKROOT" : "macosx",
+						"SWIFT_COMPILATION_MODE" : "wholemodule"
+					},
+					"name" : "Release"
+				}
+			],
+			"defaultConfigurationIsVisible" : 0,
+			"defaultConfigurationName" : "Release"
+		},
+		"29193D6B2E1A4C5F00000050" : {
+			"isa" : "PBXGroup",
+			"children" : [
+				"29193D6B2E1A4C5F00000051",
+				"29193D6B2E1A4C5F00000052"
+			],
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000051" : {
+			"isa" : "PBXGroup",
+			"children" : [
+				"29193D6B2E1A4C5F00000010"
+			],
+			"name" : "Products",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000052" : {
+			"isa" : "PBXGroup",
+			"children" : [
+				"29193D6B2E1A4C5F00000060",
+				"29193D6B2E1A4C5F00000061",
+				"29193D6B2E1A4C5F00000062",
+				"29193D6B2E1A4C5F00000063",
+				"29193D6B2E1A4C5F00000064",
+				"29193D6B2E1A4C5F00000065",
+				"29193D6B2E1A4C5F00000066",
+				"29193D6B2E1A4C5F00000067",
+				"29193D6B2E1A4C5F00000068",
+				"29193D6B2E1A4C5F00000069"
+			],
+			"path" : "DouyinAntiAddict",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000060" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "AppConstants.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000061" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "DouyinAntiAddictApp.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000062" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "DouyinMonitor.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000063" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "HostsManager.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000064" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "StatsTracker.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000065" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "SettingsManager.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000066" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "LaunchAgentManager.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000067" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "StatusBarManager.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000068" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "sourcecode.swift",
+			"path" : "SettingsWindow.swift",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000069" : {
+			"isa" : "PBXFileReference",
+			"lastKnownFileType" : "text.plist.xml",
+			"path" : "Info.plist",
+			"sourceTree" : "<group>"
+		},
+		"29193D6B2E1A4C5F00000070" : {
+			"isa" : "PBXTargetDependency",
+			"target" : "29193D6B2E1A4C5F00000014"
+		},
+		"29193D6B2E1A4C5F00000071" : {
+			"isa" : "PBXContainerItemProxy",
+			"containerPortal" : "29193D6B2E1A4C5F00000015",
+			"proxyType" : 1,
+			"remoteGlobalIDString" : "29193D6B2E1A4C5F00000014",
+			"remoteInfo" : "DouyinAntiAddict"
+		},
+		"29193D6B2E1A4C5F00000072" : {
+			"isa" : "PBXReferenceProxy",
+			"fileType" : "wrapper.application",
+			"path" : "DouyinAntiAddict.app",
+			"remoteRef" : "29193D6B2E1A4C5F00000071",
+			"sourceTree" : "BUILT_PRODUCTS_DIR"
+		}
+	},
+	"rootObject" : "29193D6B2E1A4C5F00000015"
+}
