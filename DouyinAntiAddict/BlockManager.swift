@@ -6,6 +6,10 @@ class BlockManager {
     private let pfAnchorName = AppConstants.pfAnchorName
     private let pfAnchorPath = AppConstants.pfAnchorPath
     private let blockedDateKey = "DouyinAntiAddict_BlockedDate"
+    private let blockedIPCacheKey = "DouyinAntiAddict_BlockedIPs"
+    private let pfctlPath = "/sbin/pfctl"
+    private let digPath = "/usr/bin/dig"
+    private let publicDNSServers = ["1.1.1.1", "8.8.8.8", "223.5.5.5"]
     
     func isBlocked() -> Bool {
         return isHostsBlocked() || isPFBlockInstalled()
@@ -20,11 +24,18 @@ class BlockManager {
         return savedDate == today
     }
     
+    func isPFBlocked() -> Bool {
+        isPFBlockInstalled()
+    }
+    
     func block() {
-        guard !isBlocked() else { return }
+        let resolvedIPs = resolveDomainsToIPs()
+        if !resolvedIPs.isEmpty {
+            UserDefaults.standard.set(resolvedIPs, forKey: blockedIPCacheKey)
+        }
         
-        let hostsBlocked = applyHostsBlock()
-        let pfBlocked = applyPFBlock()
+        let pfBlocked = isPFBlockInstalled() || applyPFBlock(resolvedIPs)
+        let hostsBlocked = isHostsBlocked() || applyHostsBlock()
         
         guard hostsBlocked || pfBlocked else {
             return
@@ -37,6 +48,7 @@ class BlockManager {
         _ = removeHostsBlock()
         _ = removePFBlock()
         UserDefaults.standard.removeObject(forKey: blockedDateKey)
+        UserDefaults.standard.removeObject(forKey: blockedIPCacheKey)
     }
     
     func checkAndResetIfNewDay() {
@@ -98,11 +110,13 @@ class BlockManager {
     // MARK: - pf firewall blocking
     
     private func isPFBlockInstalled() -> Bool {
-        return FileManager.default.fileExists(atPath: pfAnchorPath)
+        !installedPFIPs().isEmpty
     }
     
-    private func applyPFBlock() -> Bool {
-        let resolvedIPs = resolveDomainsToIPs()
+    private func applyPFBlock(_ candidateIPs: [String] = []) -> Bool {
+        let resolvedIPs = sanitizeResolvedIPs(candidateIPs).isEmpty
+            ? cachedResolvedIPs()
+            : sanitizeResolvedIPs(candidateIPs)
         guard !resolvedIPs.isEmpty else { return false }
         
         var pfRules = "table <douyin_blocked> {\n"
@@ -117,9 +131,10 @@ class BlockManager {
         
         let anchorDir = (pfAnchorPath as NSString).deletingLastPathComponent
         let escapedRules = pfRules.replacingOccurrences(of: "'", with: "'\\''")
+        let stateKillCommands = makePFStateKillCommands(for: resolvedIPs)
         
         let script = """
-        do shell script "mkdir -p \(anchorDir) && echo '\(escapedRules)' > \(pfAnchorPath) && pfctl -E >/dev/null 2>&1 && pfctl -a \(pfAnchorName) -f \(pfAnchorPath) || { rm -f \(pfAnchorPath); exit 1; }" with administrator privileges
+        do shell script "mkdir -p \(anchorDir) && echo '\(escapedRules)' > \(pfAnchorPath) && \(pfctlPath) -E >/dev/null 2>&1 && \(pfctlPath) -a \(pfAnchorName) -f \(pfAnchorPath) && \(stateKillCommands) || { rm -f \(pfAnchorPath); exit 1; }" with administrator privileges
         """
         
         return executeAppleScript(script)
@@ -127,7 +142,7 @@ class BlockManager {
     
     private func removePFBlock() -> Bool {
         let clearScript = """
-        do shell script "echo '' | pfctl -a \(pfAnchorName) -f - 2>/dev/null; rm -f \(pfAnchorPath)" with administrator privileges
+        do shell script "echo '' | \(pfctlPath) -a \(pfAnchorName) -f - 2>/dev/null; rm -f \(pfAnchorPath)" with administrator privileges
         """
         return executeAppleScript(clearScript)
     }
@@ -141,13 +156,36 @@ class BlockManager {
             }
         }
         
-        return Array(allIPs)
+        return sanitizeResolvedIPs(Array(allIPs))
     }
     
     private func resolveDomain(_ domain: String) -> [String]? {
+        let recordTypes = ["A", "AAAA"]
+        var allIPs = Set<String>()
+        
+        for recordType in recordTypes {
+            if let resolvedIPs = resolveDomain(domain, recordType: recordType) {
+                allIPs.formUnion(resolvedIPs)
+            }
+        }
+        
+        return allIPs.isEmpty ? nil : Array(allIPs)
+    }
+    
+    private func resolveDomain(_ domain: String, recordType: String) -> [String]? {
+        for dnsServer in publicDNSServers {
+            if let resolvedIPs = runDig(arguments: ["@\(dnsServer)", "+short", recordType, domain]) {
+                return resolvedIPs
+            }
+        }
+        
+        return runDig(arguments: ["+short", recordType, domain])
+    }
+    
+    private func runDig(arguments: [String]) -> [String]? {
         let process = Process()
-        process.launchPath = "/usr/bin/dig"
-        process.arguments = ["+short", domain]
+        process.launchPath = digPath
+        process.arguments = arguments
         
         let pipe = Pipe()
         process.standardOutput = pipe
@@ -166,10 +204,62 @@ class BlockManager {
                 .filter { $0.contains(".") || $0.contains(":") }
                 .filter { !$0.hasSuffix(".") }
             
-            return ips.isEmpty ? nil : ips
+            let sanitizedIPs = sanitizeResolvedIPs(ips)
+            return sanitizedIPs.isEmpty ? nil : sanitizedIPs
         } catch {
             return nil
         }
+    }
+    
+    private func cachedResolvedIPs() -> [String] {
+        let cachedIPs = UserDefaults.standard.stringArray(forKey: blockedIPCacheKey) ?? []
+        return sanitizeResolvedIPs(cachedIPs)
+    }
+    
+    private func installedPFIPs() -> [String] {
+        guard let content = try? String(contentsOfFile: pfAnchorPath, encoding: .utf8) else {
+            return []
+        }
+        
+        let ips = content
+            .components(separatedBy: .newlines)
+            .compactMap { line -> String? in
+                let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return nil }
+                guard !trimmed.hasPrefix("table"), !trimmed.hasPrefix("block"), trimmed != "}" else {
+                    return nil
+                }
+                return trimmed.replacingOccurrences(of: ",", with: "")
+            }
+        
+        return sanitizeResolvedIPs(ips)
+    }
+    
+    private func sanitizeResolvedIPs(_ ips: [String]) -> [String] {
+        let placeholderIPs: Set<String> = [
+            "0.0.0.0",
+            "::",
+            "::1",
+            "::ffff:0.0.0.0",
+            "127.0.0.1",
+            "::ffff:127.0.0.1"
+        ]
+        
+        return Array(Set(
+            ips
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+                .filter { !placeholderIPs.contains($0.lowercased()) }
+        ))
+    }
+    
+    private func makePFStateKillCommands(for resolvedIPs: [String]) -> String {
+        resolvedIPs
+            .map { ip in
+                let anyAddress = ip.contains(":") ? "::/0" : "0.0.0.0/0"
+                return "\(pfctlPath) -k \(anyAddress) -k \(ip) >/dev/null 2>&1 || true"
+            }
+            .joined(separator: " && ")
     }
     
     private func getTodayString() -> String {

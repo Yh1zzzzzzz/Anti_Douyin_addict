@@ -4,6 +4,7 @@ import UserNotifications
 
 class StatusBarManager: NSObject, UNUserNotificationCenterDelegate {
     private let statusBarLogoName = NSImage.Name("StatusBarLogo")
+    private var hasAttemptedPFRepairThisLaunch = false
     var statusItem: NSStatusItem!
     var monitor: DouyinMonitor!
     var blockManager: BlockManager!
@@ -47,6 +48,8 @@ class StatusBarManager: NSObject, UNUserNotificationCenterDelegate {
         }
         
         if blockManager.isBlockedToday() {
+            monitor.redirectActiveDouyinPageIfNeeded()
+            repairIncompleteBlockIfNeeded()
             return
         }
         
@@ -58,6 +61,7 @@ class StatusBarManager: NSObject, UNUserNotificationCenterDelegate {
         
         if todaySeconds >= limitSeconds {
             blockManager.block()
+            monitor.redirectActiveDouyinPageIfNeeded()
             showBlockNotification()
         }
     }
@@ -222,6 +226,19 @@ class StatusBarManager: NSObject, UNUserNotificationCenterDelegate {
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         center.requestAuthorization(options: [.alert, .sound]) { _, _ in }
+    }
+    
+    private func repairIncompleteBlockIfNeeded() {
+        guard !hasAttemptedPFRepairThisLaunch else {
+            return
+        }
+        
+        guard !blockManager.isPFBlocked() else {
+            return
+        }
+        
+        hasAttemptedPFRepairThisLaunch = true
+        blockManager.block()
     }
     
     func userNotificationCenter(

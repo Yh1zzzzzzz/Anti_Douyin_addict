@@ -3,6 +3,7 @@ import AppKit
 
 class DouyinMonitor {
     private var isRunning = false
+    private let browserApps = ["Safari", "Google Chrome", "Chrome", "Firefox", "Microsoft Edge", "Arc", "Brave Browser", "Opera"]
     
     init() {
         isRunning = true
@@ -11,8 +12,6 @@ class DouyinMonitor {
     func getActiveDouyinSeconds() -> Int {
         let frontmostApp = NSWorkspace.shared.frontmostApplication
         guard let appName = frontmostApp?.localizedName else { return 0 }
-        
-        let browserApps = ["Safari", "Google Chrome", "Chrome", "Firefox", "Microsoft Edge", "Arc", "Brave Browser", "Opera"]
         
         guard browserApps.contains(appName) else { return 0 }
         
@@ -23,6 +22,15 @@ class DouyinMonitor {
         }
         
         return 0
+    }
+    
+    func redirectActiveDouyinPageIfNeeded() {
+        let frontmostApp = NSWorkspace.shared.frontmostApplication
+        guard let appName = frontmostApp?.localizedName else { return }
+        guard browserApps.contains(appName) else { return }
+        guard let url = getBrowserURL(appName: appName), isDouyinURL(url) else { return }
+        
+        redirectCurrentTab(appName: appName)
     }
     
     private func getBrowserURL(appName: String) -> String? {
@@ -88,6 +96,46 @@ class DouyinMonitor {
         end tell
         """
         return executeAppleScript(appleScript)
+    }
+    
+    private func redirectCurrentTab(appName: String) {
+        let script: String
+        
+        switch appName {
+        case "Safari":
+            script = """
+            tell application "Safari"
+                if (count of windows) > 0 then
+                    if (count of tabs in window 1) > 0 then
+                        set URL of current tab of window 1 to "about:blank"
+                    end if
+                end if
+            end tell
+            """
+        case "Firefox":
+            script = """
+            tell application "Firefox"
+                activate
+            end tell
+            tell application "System Events"
+                keystroke "l" using command down
+                keystroke "about:blank"
+                key code 36
+            end tell
+            """
+        default:
+            script = """
+            tell application "\(appName)"
+                if (count of windows) > 0 then
+                    if (count of tabs in window 1) > 0 then
+                        set URL of active tab of window 1 to "about:blank"
+                    end if
+                end if
+            end tell
+            """
+        }
+        
+        _ = executeAppleScript(script)
     }
     
     private func executeAppleScript(_ script: String) -> String? {
